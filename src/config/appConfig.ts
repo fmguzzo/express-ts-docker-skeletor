@@ -1,12 +1,10 @@
+/**
+ * Implement Singleton Patterns in config file
+ */
+
 import dotenv from "dotenv";
 import path from "path";
 import { z } from "zod";
-
-/**
- * ######### deprecated - now is using appConfig.ts (Singleton) ############
- */
-
-dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 const configFileSchema = z.object({
   env: z.enum(["development", "production", "test"]),
@@ -81,43 +79,54 @@ const configFileSchema = z.object({
   }),
 });
 
-export type ConfigFile = z.TypeOf<typeof configFileSchema>;
+type ConfigFile = z.TypeOf<typeof configFileSchema>;
 
-const config = {
-  env: process.env.NODE_ENV,
-  port: process.env.PORT ? parseInt(process.env.PORT) : undefined,
-  mongodb: {
-    uri: process.env.MONGODB_URI,
-    // this options does not exist in mongoose v6+
-    options: {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-    },
-  },
-  logLevel: "debug",
-  saltWorkFactor: 10,
-  accessTokenTtl: "15m",
-  refreshTokenTtl: "1y",
-  accessTokenPrivateKey: process.env.ACCESS_TOKEN_PRIVATE_KEY,
-  accessTokenPublicKey: process.env.ACCESS_TOKEN_PUBLIC_KEY,
-  refreshTokenPrivateKey: process.env.REFRESH_TOKEN_PRIVATE_KEY,
-  refreshTokenPublicKey: process.env.REFRESH_TOKEN_PUBLIC_KEY,
-  email: {
-    smtp: {
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : undefined,
-      secure: process.env.SMTP_SECURE
-        ? process.env.SMTP_SECURE === "true"
-        : false,
-    },
-    auth: {
-      user: process.env.SMTP_USERNAME,
-      pass: process.env.SMTP_PASSWORD,
-    },
-    defaults: {
-      from: process.env.EMAIL_FROM,
-    },
-  },
-};
-
-export default configFileSchema.parse(config);
+export default class AppConfig {
+  private static instance: AppConfig;
+  config: ConfigFile;
+  private constructor() {
+    dotenv.config({ path: path.join(__dirname, "../../.env") });
+    const envConfig = {
+      env: process.env.NODE_ENV,
+      port: process.env.PORT ? parseInt(process.env.PORT) : undefined,
+      mongodb: {
+        uri: process.env.MONGODB_URI,
+        // this options does not exist in mongoose v6+
+        options: {
+          useUnifiedTopology: true,
+          useNewUrlParser: true,
+        },
+      },
+      logLevel: "debug",
+      saltWorkFactor: 10,
+      accessTokenTtl: "15m",
+      refreshTokenTtl: "1y",
+      accessTokenPrivateKey: process.env.ACCESS_TOKEN_PRIVATE_KEY,
+      accessTokenPublicKey: process.env.ACCESS_TOKEN_PUBLIC_KEY,
+      refreshTokenPrivateKey: process.env.REFRESH_TOKEN_PRIVATE_KEY,
+      refreshTokenPublicKey: process.env.REFRESH_TOKEN_PUBLIC_KEY,
+      email: {
+        smtp: {
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT
+            ? parseInt(process.env.SMTP_PORT)
+            : undefined,
+          secure: process.env.SMTP_SECURE
+            ? process.env.SMTP_SECURE === "true"
+            : false,
+        },
+        auth: {
+          user: process.env.SMTP_USERNAME,
+          pass: process.env.SMTP_PASSWORD,
+        },
+        defaults: {
+          from: process.env.EMAIL_FROM,
+        },
+      },
+    };
+    this.config = configFileSchema.parse(envConfig);
+  }
+  static getInstance(): AppConfig {
+    return (this.instance ??= new AppConfig());
+  }
+}

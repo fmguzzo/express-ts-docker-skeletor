@@ -1,9 +1,10 @@
 import { omit } from "lodash";
-import config from "../config/config";
 import { signJwt } from "../utils/jwt";
 import { FilterQuery, UpdateQuery } from "mongoose";
 import { privateFields, UserDocument } from "../models/user.model";
 import SessionModel, { SessionDocument } from "../models/session.model";
+import AppConfig from "../config/appConfig";
+const config = AppConfig.getInstance().config;
 
 /*
 export async function createSession(user: string, isAdmin: boolean) {

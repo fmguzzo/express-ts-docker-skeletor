@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { nanoid } from "nanoid";
-import config from "../config/config";
+import AppConfig from "../config/appConfig";
+
+const config = AppConfig.getInstance().config;
 
 export interface UserField {
   email: string;
@@ -72,7 +74,7 @@ userSchema.pre("save", async function (next) {
     return next();
   }
 
-  const salt = await bcrypt.genSalt(config.saltWorkFactor as number);
+  const salt = await bcrypt.genSalt(config.saltWorkFactor);
   const hash = await bcrypt.hashSync(user.password, salt);
   user.password = hash;
   return next();

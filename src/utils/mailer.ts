@@ -1,6 +1,7 @@
 import nodemailer, { SendMailOptions } from "nodemailer";
-import config from "../config/config";
 import log from "./logger";
+import AppConfig from "../config/appConfig";
+const config = AppConfig.getInstance().config;
 
 const smtp = config.email.smtp;
 const auth = config.email.auth;

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-import config from "../config/config";
+import AppConfig from "../config/appConfig";
+const config = AppConfig.getInstance().config;
 
 export function signJwt(
   object: Object,

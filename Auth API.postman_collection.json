@@ -2,7 +2,8 @@
 	"info": {
 		"_postman_id": "13cb6100-f374-420a-9238-c186e163885c",
 		"name": "Auth API",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14840771"
 	},
 	"item": [
 		{
@@ -269,12 +270,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/users/me",
+							"raw": "{{host}}/api/v1/users/me",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
+								"v1",
 								"users",
 								"me"
 							]

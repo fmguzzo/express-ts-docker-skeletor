@@ -1,5 +1,5 @@
 import mongoose, { ConnectOptions } from "mongoose";
-import config from "../config/config";
+import AppConfig from "../config/appConfig";
 import log from "../utils/logger";
 
 // from v6+ does not exist in ConnectOptions (useUnifiedTopology y useNewUrlParser)
@@ -21,6 +21,8 @@ import log from "../utils/logger";
  * only with uri. We will define others options available
  * if it's necesary
  **/
+
+const config = AppConfig.getInstance().config;
 
 async function connectToDb() {
   try {

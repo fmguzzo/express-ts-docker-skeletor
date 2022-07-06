@@ -1,9 +1,9 @@
 import connectToDb from "./utils/connectToDb";
 import log from "./utils/logger";
-import config from "./config/config";
+import AppConfig from "./config/appConfig";
 import createServer from "./utils/server";
 
-const port = config.port;
+const { port } = AppConfig.getInstance().config;
 
 const app = createServer();
 
