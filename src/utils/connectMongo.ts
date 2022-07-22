@@ -24,7 +24,16 @@ import log from "../utils/logger";
 
 const config = AppConfig.getInstance().config;
 
-async function connectToDb() {
+// mongoose.connection.once("open", () => {
+//   console.log("MongoDB connection ready!");
+// });
+
+mongoose.connection.on("error", (err) => {
+  log.error(`Could not connect to Database: ${err.message}`);
+});
+
+export async function mongoConnect() {
+  //await mongoose.connect(MONGO_URL);
   try {
     const db = await mongoose.connect(
       config.mongodb.uri as string,
@@ -40,4 +49,6 @@ async function connectToDb() {
   }
 }
 
-export default connectToDb;
+export async function mongoDisconnect() {
+  await mongoose.disconnect();
+}

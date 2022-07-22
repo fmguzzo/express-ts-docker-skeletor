@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 import supertest from "supertest";
-import createServer from "../utils/server";
-import * as UserService from "../services/user.service";
-
-const app = createServer();
+import app from "../../app";
+import * as UserService from "../../services/user.service";
 
 const userInput = {
   firstName: "Felipe",

@@ -2,7 +2,7 @@
   "name": "node-typescript-docker",
   "version": "1.0.0",
   "description": "",
-  "main": "/src/app.js",
+  "main": "/src/server.js",
   "scripts": {
     "prettier:check": "prettier --check src/**/*.ts --no-error-on-unmatched-pattern",
     "prettier:fix": "prettier --write src/**/*.ts --ignore-unknown --no-error-on-unmatched-pattern",
@@ -15,8 +15,8 @@
     "build": "npm run clean && npm run build:ts",
     "test": "jest --forceExit --coverage --verbose",
     "test:watch": "npm run test -- --watchAll",
-    "start": "node build/app.js",
-    "dev": "ts-node-dev --inspect --respawn --transpile-only src/app.ts"
+    "start": "node build/server.js",
+    "dev": "ts-node-dev --inspect --respawn --transpile-only src/server.ts"
   },
   "keywords": [],
   "author": "",

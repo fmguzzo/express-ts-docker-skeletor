@@ -4,9 +4,9 @@
 
 import mongoose from "mongoose";
 import supertest from "supertest";
-import createServer from "../utils/server";
-import * as UserService from "../services/user.service";
-import * as AuthService from "../services/auth.service";
+import app from "../../app";
+import * as UserService from "../../services/user.service";
+import * as AuthService from "../../services/auth.service";
 
 // TODO (a)
 // jest.mock("../services/auth.service", () => {
@@ -17,8 +17,6 @@ import * as AuthService from "../services/auth.service";
 //     //createSession: () => Promise.resolve(sessionPayload),
 //   };
 // });
-
-const app = createServer();
 
 const userId = new mongoose.Types.ObjectId().toString();
 

@@ -1,13 +1,37 @@
-import connectToDb from "./utils/connectToDb";
-import log from "./utils/logger";
-import AppConfig from "./config/appConfig";
-import createServer from "./utils/server";
+import express from "express";
+import helmet from "helmet";
+import router from "./routes/v1";
+import morgan from "morgan";
+import { errorHandler, notFoundHandler } from "./middlewares/error";
+import deserializeUser from "./middlewares/deserializeUser";
 
-const { port } = AppConfig.getInstance().config;
+const app = express();
 
-const app = createServer();
+// set security HTTP headers
+app.use(helmet());
 
-app.listen(port, async () => {
-  log.info(`App started at [http://localhost:${port}]`);
-  await connectToDb();
-});
+// logger
+app.use(morgan("dev"));
+
+// TODO: Implement CORS
+
+// parse json request body
+app.use(express.json());
+
+// parse urlencoded request body
+app.use(express.urlencoded({ extended: true }));
+
+// get user by access token
+app.use(deserializeUser);
+
+// TODO: sanitize request data
+//app.use(xss());
+//app.use(mongoSanitize());
+
+// v1 api routes
+app.use("/api/v1", router);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+export default app;

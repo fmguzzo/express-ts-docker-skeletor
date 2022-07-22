@@ -1,10 +1,8 @@
 import supertest from "supertest";
-import createServer from "../utils/server";
-
-const app = createServer();
+import app from "../../app";
 
 describe("GET /api/v1/healthcheck", () => {
-  it.skip("should return 200 OK", async () => {
+  it("should return 200 OK", async () => {
     await supertest(app).get("/api/v1/healthcheck").expect(200);
   });
 });
