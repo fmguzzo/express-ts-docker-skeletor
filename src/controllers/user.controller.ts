@@ -10,11 +10,12 @@ import {
   createUser,
   findUserById,
   findUserByEmail,
+  saveUser,
 } from "../services/user.service";
 import { omit } from "lodash";
 import { nanoid } from "nanoid";
 
-import log from "../utils/logger";
+//import log from "../utils/logger";
 import sendEmail from "../utils/mailer";
 
 export async function createUserHandler(
@@ -34,14 +35,14 @@ export async function createUserHandler(
       text: `verification code: ${user.verificationCode}. Id: ${user._id}`,
     });
 
-    return res.send(omit(user.toJSON(), ["password", "verificationCode"]));
+    return res
+      .status(201)
+      .send(omit(user, ["password", "verificationCode", "__v"]));
   } catch (err: any) {
     if (err.code === 11000) {
-      //return res.status(409).send("Account already exists");
       res.status(409);
       return next(new Error("Account already exists"));
     }
-    //return res.status(500).send(err);
     return next(err);
   }
 }
@@ -71,13 +72,13 @@ export async function verifyUserHandler(
 
     // check to see if the verificationCode matches
     if (user.verificationCode === verificationCode) {
-      user.verified = true;
-      await user.save();
+      const userUpdated = await saveUser(user._id, { verified: true });
       return res.send(
-        omit(user.toJSON(), [
+        omit(userUpdated, [
           "password",
           "verificationCode",
           "passwordResetCode",
+          "__v",
         ])
       );
     }
@@ -100,7 +101,7 @@ export async function forgotPasswordHandler(
       "If a user with that email is registered you will receive a password reset email";
 
     if (!user) {
-      log.debug(`User with email ${email} does not exists`);
+      // log.debug(`User with email ${email} does not exists`);
       return res.send(message);
     }
 
@@ -109,17 +110,17 @@ export async function forgotPasswordHandler(
       throw new Error("User is not verified.");
     }
 
-    user.passwordResetCode = nanoid();
-    await user.save();
+    const passwordResetCode = nanoid();
+    const userUpdated = await saveUser(user._id, { passwordResetCode });
 
     sendEmail({
-      to: user.email,
+      to: userUpdated?.email,
       from: "test@example.com",
       subject: "Reset your password",
-      text: `Password reset code: ${user.passwordResetCode}. Id ${user._id}`,
+      text: `Password reset code: ${userUpdated?.passwordResetCode}. Id ${userUpdated?._id}`,
     });
 
-    log.debug(`Password reset email sent to ${email}`);
+    // log.debug(`Password reset email sent to ${email}`);
 
     return res.send(message);
   } catch (err) {
@@ -147,12 +148,18 @@ export async function resetPasswordHandler(
       throw new Error("Could not reset user password");
     }
 
-    user.passwordResetCode = null;
-    user.password = password;
-    await user.save();
+    const userUpdated = await saveUser(user._id, {
+      passwordResetCode: null,
+      password,
+    });
 
     res.send(
-      omit(user.toJSON(), ["password", "verificationCode", "passwordResetCode"])
+      omit(userUpdated, [
+        "password",
+        "verificationCode",
+        "passwordResetCode",
+        "__v",
+      ])
     );
   } catch (err) {
     next(err);

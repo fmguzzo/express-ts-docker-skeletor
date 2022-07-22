@@ -21,39 +21,20 @@ const userPayload = {
   verified: true,
 };
 
-// TODO: es correcto definir asi los metodos de UserModel
-const userDocument = {
-  ...userPayload,
-  toJSON: () => {
-    return { ...userPayload };
-  },
-  comparePassword: () => true,
-};
-
-const sessionPayload = {
-  _id: new mongoose.Types.ObjectId().toString(),
-  user: userId,
-  valid: true,
-  userAgent: "PostmanRuntime/7.28.4",
-  createdAt: new Date("2021-09-30T13:31:07.674Z"),
-  updatedAt: new Date("2021-09-30T13:31:07.674Z"),
-  __v: 0,
-};
-
 describe("user", () => {
   describe("user registration", () => {
     describe("given the username and password are valid", () => {
-      it("should return a 200 and user payload", async () => {
+      it("should return a 201 and user payload", async () => {
         // @ts-ignore
         const createUserServiceMock = jest
           .spyOn(UserService, "createUser")
           // @ts-ignore
-          .mockReturnValueOnce(userDocument);
+          .mockReturnValueOnce(userPayload);
         const { statusCode, body } = await supertest(app)
           .post("/api/v1/users")
           .send(userInput);
 
-        expect(statusCode).toBe(200);
+        expect(statusCode).toBe(201);
         expect(body).toEqual(userPayload);
         expect(createUserServiceMock).toHaveBeenCalledWith(userInput);
       });
