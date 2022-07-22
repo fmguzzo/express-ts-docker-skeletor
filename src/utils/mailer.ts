@@ -13,6 +13,12 @@ const defaults = config.email.defaults;
 //   auth: { ...auth },
 // });
 
+// async function createTestCreds() {
+//   const creds = await nodemailer.createTestAccount();
+//   console.log({ creds });
+// }
+// createTestCreds();
+
 const transporter = nodemailer.createTransport(
   {
     host: smtp.host,
