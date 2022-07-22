@@ -64,7 +64,11 @@ export async function signRefreshToken({
 }
 
 export function signAccessToken(user: UserDocument) {
-  const payload = omit(user.toJSON(), privateFields);
+  //const payload = omit(user.toJSON(), privateFields);
+  const payload = {
+    _id: user._id,
+    email: user.email,
+  };
 
   const accessToken = signJwt(payload, "accessTokenPrivateKey", {
     expiresIn: config.accessTokenTtl,

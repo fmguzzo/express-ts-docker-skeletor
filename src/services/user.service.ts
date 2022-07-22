@@ -25,3 +25,8 @@ export async function saveUser(id: string, update: UpdateQuery<UserField>) {
   });
   return userUpdated?.toJSON();
 }
+
+export async function validatePassword(userId: string, password: string) {
+  const user = await UserModel.findById(userId);
+  return user?.comparePassword(password);
+}

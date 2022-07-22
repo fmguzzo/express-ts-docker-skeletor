@@ -7,7 +7,11 @@ import {
   findSessions,
   updateSession,
 } from "../services/auth.service";
-import { findUserByEmail, findUserById } from "../services/user.service";
+import {
+  findUserByEmail,
+  findUserById,
+  validatePassword,
+} from "../services/user.service";
 import { get } from "lodash";
 import { verifyJwt } from "../utils/jwt";
 
@@ -35,7 +39,7 @@ export async function createSessionHandler(
       throw new Error("Please verify your email");
     }
 
-    const isValid = await user.comparePassword(password);
+    const isValid = await validatePassword(user._id, password);
     if (!isValid) {
       res.status(401);
       throw new Error(message);
