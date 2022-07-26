@@ -51,8 +51,8 @@ EXAMPLE ACCOUNT EMAIL
 
 `SMTP_SECURE=false`
 
-`SMTP_USERNAME="icqskc5mxzf3bwct@ethereal.email"`
+`SMTP_USERNAME="zgadbajztc64cp2q@ethereal.email"`
 
-`SMTP_PASSWORD="mVSU79SbF3WmvGqy4V"`
+`SMTP_PASSWORD="eB28yyPzZmg4nMyYkq"`
 
 `EMAIL_FROM="from@email.com"`

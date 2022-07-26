@@ -24,6 +24,12 @@ import log from "../utils/logger";
 
 const config = AppConfig.getInstance().config;
 
+// TODO: Refactor database testing
+let mongodbUri = config.mongodb.uri;
+if (process.env.NODE_ENV === "test") {
+  mongodbUri += "_test";
+}
+
 // mongoose.connection.once("open", () => {
 //   console.log("MongoDB connection ready!");
 // });
@@ -36,7 +42,8 @@ export async function mongoConnect() {
   //await mongoose.connect(MONGO_URL);
   try {
     const db = await mongoose.connect(
-      config.mongodb.uri as string,
+      //config.mongodb.uri as string,
+      mongodbUri as string,
       config.mongodb.options as ConnectOptions
     );
     log.info(
