@@ -14,16 +14,19 @@ const configFileSchema = z.object({
     })
     .int()
     .gte(3000),
-  mongodb: z.object({
-    uri: z
-      .string({
-        required_error: "Mongodb uri is required",
-      })
-      .min(1),
-    options: z.object({
-      useUnifiedTopology: z.boolean().optional(),
-      useNewUrlParser: z.boolean().optional(),
-    }),
+  // mongodb: z.object({
+  //   uri: z
+  //     .string({
+  //       required_error: "Mongodb uri is required",
+  //     })
+  //     .min(1),
+  //   options: z.object({
+  //     useUnifiedTopology: z.boolean().optional(),
+  //     useNewUrlParser: z.boolean().optional(),
+  //   }),
+  // }),
+  databaseUri: z.string({
+    required_error: "Database URL is required",
   }),
   logLevel: z.string({
     required_error: "Log level is required",
@@ -89,14 +92,15 @@ export default class AppConfig {
     const envConfig = {
       env: process.env.NODE_ENV,
       port: process.env.PORT ? parseInt(process.env.PORT) : undefined,
-      mongodb: {
-        uri: process.env.MONGODB_URI,
-        // this options does not exist in mongoose v6+
-        options: {
-          useUnifiedTopology: true,
-          useNewUrlParser: true,
-        },
-      },
+      // mongodb: {
+      //   uri: process.env.MONGODB_URI,
+      //   // this options does not exist in mongoose v6+
+      //   options: {
+      //     useUnifiedTopology: true,
+      //     useNewUrlParser: true,
+      //   },
+      // },
+      databaseUri: process.env.DATABASE_URL,
       logLevel: "debug",
       saltWorkFactor: 10,
       accessTokenTtl: "15m",
