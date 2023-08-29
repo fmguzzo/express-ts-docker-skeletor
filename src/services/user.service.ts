@@ -1,41 +1,49 @@
-import { FilterQuery, UpdateQuery } from "mongoose";
-import UserModel, { UserField, UserDocument } from "../models/user.model";
 import { prisma } from "../utils/prismaClient";
 import { Prisma } from "@prisma/client";
-import { hashPassword } from "../utils/password";
+import { hashPassword, comparePassword } from "../utils/password";
 
-// export async function createUser(user: Partial<UserField>) {
-//   const userCreated = await UserModel.create(user);
-//   return userCreated.toJSON();
-// }
+const userSafeSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+};
 
-// export async function findUserById(id: string) {
-//   return UserModel.findById(id);
-// }
-
-export async function findUserByEmail(email: string) {
-  return UserModel.findOne({ email });
-}
+const userRegularSelect = {
+  ...userSafeSelect,
+  verified: true,
+  verificationCode: true,
+  passwordResetCode: true,
+};
 
 // General findUser()
-export async function findUser(query: FilterQuery<UserDocument>) {
-  return UserModel.findOne(query).lean();
-}
-
-// export async function saveUser(id: string, update: UpdateQuery<UserField>) {
-//   const userUpdated = await UserModel.findByIdAndUpdate(id, update, {
-//     new: true,
-//   });
-//   return userUpdated?.toJSON();
+// export async function findUser(query: FilterQuery<UserDocument>) {
+//   return UserModel.findOne(query).lean();
 // }
 
-export async function validatePassword(userId: string, password: string) {
-  const user = await UserModel.findById(userId);
-  return user?.comparePassword(password);
+/** ######################################################### */
+/** ########## Migrate mongodb to prisma postgresql ######### */
+/** ######################################################### */
+
+export async function validatePassword(
+  userId: string,
+  passwordToValidate: string
+) {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      password: true,
+    },
+  });
+  if (!user) return false;
+
+  return comparePassword(user.password, passwordToValidate);
 }
 
-/** Migrate mongodb to prisma postgresql */
 export async function createUser(user: Prisma.UserCreateInput) {
+  // TODO: Make hash by prisma midleware
   const passwordHashed = await hashPassword(user.password);
   const userCreated = await prisma.user.create({
     data: { ...user, password: passwordHashed },
@@ -50,20 +58,28 @@ export async function findUserById(id: string) {
       id,
     },
     select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      verified: true,
-      verificationCode: true,
+      ...userRegularSelect,
     },
   });
 }
 
 export async function saveUser(id: string, data: Prisma.UserUpdateInput) {
+  // TODO: Make hash by prisma midleware
+  if (data.password && typeof data.password === "string") {
+    data.password = await hashPassword(data.password);
+  }
   const userUpdated = await prisma.user.update({
     where: { id },
     data: { ...data },
   });
   return userUpdated;
+}
+
+export async function findUserByEmail(email: string) {
+  return prisma.user.findUnique({
+    where: {
+      email,
+    },
+    select: { ...userRegularSelect },
+  });
 }

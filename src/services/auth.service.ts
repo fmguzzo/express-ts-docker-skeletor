@@ -1,9 +1,7 @@
-import { omit } from "lodash";
 import { signJwt } from "../utils/jwt";
-import { FilterQuery, UpdateQuery } from "mongoose";
-import { privateFields, UserDocument } from "../models/user.model";
-import SessionModel, { SessionDocument } from "../models/session.model";
 import AppConfig from "../config/appConfig";
+import { prisma } from "../utils/prismaClient";
+import { Prisma } from "@prisma/client";
 const config = AppConfig.getInstance().config;
 
 /*
@@ -16,35 +14,49 @@ export async function createSession(user: string, isAdmin: boolean) {
 export async function createSession({
   userId,
   userAgent,
-}: {
-  userId: string;
-  userAgent: string;
-}) {
-  return SessionModel.create({ user: userId, userAgent });
+}: Prisma.SessionCreateManyInput) {
+  return prisma.session.create({
+    data: {
+      userId,
+      userAgent,
+    },
+  });
 }
 
 export async function findSessionById(sessionId: string) {
-  return SessionModel.findById(sessionId);
+  return prisma.session.findFirst({
+    where: {
+      id: sessionId,
+    },
+  });
 }
 
-export async function findSessions(query: FilterQuery<SessionDocument>) {
-  return SessionModel.findOne(query);
+export async function findSessions(query: Prisma.SessionWhereInput) {
+  return prisma.session.findFirst({
+    where: {
+      ...query,
+    },
+  });
 }
 
 export async function updateSession(
-  query: FilterQuery<SessionDocument>,
-  update: UpdateQuery<SessionDocument>
+  query: Prisma.SessionWhereInput,
+  data: Prisma.SessionUpdateInput
 ) {
-  return SessionModel.updateOne(query, update);
+  return prisma.session.updateMany({
+    where: {
+      ...query,
+    },
+    data: {
+      ...data,
+    },
+  });
 }
 
 export async function signRefreshToken({
   userId,
   userAgent,
-}: {
-  userId: string;
-  userAgent: string;
-}) {
+}: Prisma.SessionCreateManyInput) {
   const session = await createSession({
     userId,
     userAgent,
@@ -52,7 +64,7 @@ export async function signRefreshToken({
 
   const refreshToken = signJwt(
     {
-      session: session._id,
+      session: session.id,
     },
     "refreshTokenPrivateKey",
     {
@@ -63,10 +75,9 @@ export async function signRefreshToken({
   return refreshToken;
 }
 
-export function signAccessToken(user: UserDocument) {
-  //const payload = omit(user.toJSON(), privateFields);
+export function signAccessToken(user: Partial<Prisma.UserCreateInput>) {
   const payload = {
-    _id: user._id,
+    id: user.id,
     email: user.email,
   };
 

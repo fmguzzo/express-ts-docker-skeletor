@@ -107,13 +107,13 @@ export async function forgotPasswordHandler(
     }
 
     const passwordResetCode = nanoid();
-    const userUpdated = await saveUser(user._id, { passwordResetCode });
+    const userUpdated = await saveUser(user.id, { passwordResetCode });
 
     sendEmail({
       to: userUpdated?.email,
       from: "test@example.com",
       subject: "Reset your password",
-      text: `Password reset code: ${userUpdated?.passwordResetCode}. Id ${userUpdated?._id}`,
+      text: `Password reset code: ${userUpdated?.passwordResetCode}. Id ${userUpdated?.id}`,
     });
 
     // log.debug(`Password reset email sent to ${email}`);
@@ -144,18 +144,13 @@ export async function resetPasswordHandler(
       throw new Error("Could not reset user password");
     }
 
-    const userUpdated = await saveUser(user._id, {
+    const userUpdated = await saveUser(user.id, {
       passwordResetCode: null,
       password,
     });
 
     res.send(
-      omit(userUpdated, [
-        "password",
-        "verificationCode",
-        "passwordResetCode",
-        "__v",
-      ])
+      omit(userUpdated, ["password", "verificationCode", "passwordResetCode"])
     );
   } catch (err) {
     next(err);

@@ -39,18 +39,19 @@ export async function createSessionHandler(
       throw new Error("Please verify your email");
     }
 
-    const isValid = await validatePassword(user._id, password);
+    // TODO: Inside validatePassword we find again in user table (return user.password in query)
+    const isValid = await validatePassword(user.id, password);
     if (!isValid) {
       res.status(401);
       throw new Error(message);
     }
 
     // sign a access token
-    const accessToken = signAccessToken(user);
+    const accessToken = signAccessToken({ id: user.id, email: user.email });
 
     // sign a refresh token
     const refreshToken = await signRefreshToken({
-      userId: user._id,
+      userId: user.id,
       userAgent: req.get("user-agent") || "",
     });
 
@@ -90,7 +91,7 @@ export async function refreshAccessTokenHandler(
       throw new Error("Could not refresh access token");
     }
 
-    const user = await findUserById(String(session.user));
+    const user = await findUserById(session.userId);
 
     if (!user) {
       res.status(401);
@@ -111,8 +112,8 @@ export async function getUserSessionsHandler(
   next: NextFunction
 ) {
   try {
-    const userId = res.locals.user._id;
-    const sessions = await findSessions({ user: userId, valid: true });
+    const userId = res.locals.user.id;
+    const sessions = await findSessions({ userId, valid: true });
     if (!sessions) {
       res.status(403);
       throw new Error("Does not exist active session for User");
@@ -141,13 +142,13 @@ export async function deleteSessionHandler(
 ) {
   // TODO: el desarialize, manejo del refresh
   try {
-    const userId = res.locals.user._id;
-    const sessions = await findSessions({ user: userId, valid: true });
+    const userId = res.locals.user.id;
+    const sessions = await findSessions({ userId, valid: true });
     if (!sessions) {
       res.status(403);
       throw new Error("Does not exist active session for User");
     }
-    await updateSession({ _id: sessions?._id }, { valid: false });
+    await updateSession({ id: sessions.id }, { valid: false });
 
     return res.send({
       accessToken: null,
