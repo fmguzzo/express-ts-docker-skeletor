@@ -17,6 +17,7 @@ import { nanoid } from "nanoid";
 
 //import log from "../utils/logger";
 import sendEmail from "../utils/mailer";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function createUserHandler(
   req: Request<{}, {}, CreateUserInput>,
@@ -26,22 +27,22 @@ export async function createUserHandler(
   const body = req.body;
 
   try {
-    const user = await createUser(body);
+    const user = await createUser(omit(body, ["passwordConfirmation"]));
 
     // await sendEmail({
     sendEmail({
       to: user.email,
       subject: "Verify your email",
-      text: `verification code: ${user.verificationCode}. Id: ${user._id}`,
+      text: `verification code: ${user.verificationCode}. Id: ${user.id}`,
     });
 
-    return res
-      .status(201)
-      .send(omit(user, ["password", "verificationCode", "__v"]));
+    return res.status(201).send(omit(user, ["password", "verificationCode"]));
   } catch (err: any) {
-    if (err.code === 11000) {
-      res.status(409);
-      return next(new Error("Account already exists"));
+    if (err instanceof PrismaClientKnownRequestError) {
+      if (err.code === "P2002") {
+        res.status(409);
+        return next(new Error("Account already exists"));
+      }
     }
     return next(err);
   }
@@ -72,14 +73,9 @@ export async function verifyUserHandler(
 
     // check to see if the verificationCode matches
     if (user.verificationCode === verificationCode) {
-      const userUpdated = await saveUser(user._id, { verified: true });
+      const userUpdated = await saveUser(user.id, { verified: true });
       return res.send(
-        omit(userUpdated, [
-          "password",
-          "verificationCode",
-          "passwordResetCode",
-          "__v",
-        ])
+        omit(userUpdated, ["password", "verificationCode", "passwordResetCode"])
       );
     }
     res.status(400);
